@@ -39,4 +39,9 @@ urlpatterns = [
         ),
         name="swagger-ui",
     ),
+
+    path(
+    "api/knowledge/",
+    include("knowledge_base.urls"),
+),
 ]
