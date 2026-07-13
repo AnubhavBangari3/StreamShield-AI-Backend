@@ -6,10 +6,25 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path(
+        "admin/",
+        admin.site.urls,
+    ),
 
-    path("api/", include("streams.urls")),
-    path("api/", include("incidents.urls")),
+    path(
+        "api/",
+        include("streams.urls"),
+    ),
+
+    path(
+        "api/",
+        include("incidents.urls"),
+    ),
+
+    path(
+        "api/simulator/",
+        include("simulator.urls"),
+    ),
 
     path(
         "api/schema/",
