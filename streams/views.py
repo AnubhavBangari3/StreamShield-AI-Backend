@@ -11,7 +11,7 @@ from .services import create_incident_from_metric, detect_anomaly
 
 
 class StreamViewSet(viewsets.ModelViewSet):
-    queryset = Stream.objects.all()
+    queryset = Stream.objects.order_by("-created_at")
     serializer_class = StreamSerializer
 
     @action(detail=True, methods=["get"])
@@ -42,7 +42,11 @@ class StreamViewSet(viewsets.ModelViewSet):
 
 
 class StreamMetricViewSet(viewsets.ModelViewSet):
-    queryset = StreamMetric.objects.select_related("stream").all()
+    queryset = (
+        StreamMetric.objects
+        .select_related("stream")
+        .order_by("-timestamp")[:100]
+    )
     serializer_class = StreamMetricSerializer
 
     def create(self, request, *args, **kwargs):

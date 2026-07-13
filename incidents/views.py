@@ -16,8 +16,11 @@ from .serializers import (
 
 
 class IncidentViewSet(viewsets.ModelViewSet):
-    queryset = Incident.objects.select_related("stream").prefetch_related(
-        "recommendations"
+    queryset = (
+        Incident.objects
+        .select_related("stream")
+        .prefetch_related("recommendations")
+        .order_by("-created_at")[:20]
     )
     serializer_class = IncidentSerializer
 
