@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "incidents",
     "simulator",
     "ai_engine",
+    "knowledge_base",
 ]
 
 MIDDLEWARE = [
