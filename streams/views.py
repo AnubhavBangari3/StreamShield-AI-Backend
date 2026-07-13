@@ -1,6 +1,9 @@
+from django.db.models import Avg, Sum
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
+
+from incidents.models import Incident
 
 from .models import Stream, StreamMetric
 from .serializers import StreamMetricSerializer, StreamSerializer
@@ -8,7 +11,7 @@ from .services import create_incident_from_metric, detect_anomaly
 
 
 class StreamViewSet(viewsets.ModelViewSet):
-    queryset = Stream.objects.all().order_by("-created_at")
+    queryset = Stream.objects.all()
     serializer_class = StreamSerializer
 
     @action(detail=True, methods=["get"])
@@ -20,6 +23,21 @@ class StreamViewSet(viewsets.ModelViewSet):
             metrics,
             many=True,
         )
+
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"])
+    def incidents(self, request, pk=None):
+        from incidents.serializers import IncidentSerializer
+
+        stream = self.get_object()
+        incidents = stream.incidents.all()[:20]
+
+        serializer = IncidentSerializer(
+            incidents,
+            many=True,
+        )
+
         return Response(serializer.data)
 
 
@@ -33,8 +51,7 @@ class StreamMetricViewSet(viewsets.ModelViewSet):
 
         metric = serializer.save()
 
-        is_anomaly, reason = detect_anomaly(metric)
-
+        is_anomaly, reasons = detect_anomaly(metric)
         incident = None
 
         if is_anomaly:
@@ -45,14 +62,14 @@ class StreamMetricViewSet(viewsets.ModelViewSet):
             metric.stream.save(update_fields=["status"])
 
             incident = create_incident_from_metric(
-                metric,
-                reason,
+                metric=metric,
+                reasons=reasons,
             )
 
         response_data = {
             "metric": self.get_serializer(metric).data,
             "anomaly_detected": is_anomaly,
-            "reason": reason,
+            "reasons": reasons,
             "incident_id": incident.id if incident else None,
         }
 
@@ -60,3 +77,44 @@ class StreamMetricViewSet(viewsets.ModelViewSet):
             response_data,
             status=status.HTTP_201_CREATED,
         )
+
+
+@api_view(["GET"])
+def dashboard_summary(request):
+    streams = Stream.objects.all()
+    metrics = StreamMetric.objects.all()
+    incidents = Incident.objects.all()
+
+    metric_summary = metrics.aggregate(
+        total_viewers=Sum("concurrent_viewers"),
+        average_latency=Avg("cdn_latency_ms"),
+        average_buffer_ratio=Avg("buffer_ratio"),
+        average_failure_rate=Avg("failure_rate"),
+    )
+
+    data = {
+        "total_streams": streams.count(),
+        "healthy_streams": streams.filter(status="healthy").count(),
+        "degraded_streams": streams.filter(status="degraded").count(),
+        "critical_streams": streams.filter(status="critical").count(),
+        "active_incidents": incidents.exclude(status="resolved").count(),
+        "critical_incidents": incidents.filter(
+            severity="critical",
+            status__in=["open", "investigating"],
+        ).count(),
+        "total_viewers": metric_summary["total_viewers"] or 0,
+        "average_latency": round(
+            metric_summary["average_latency"] or 0,
+            2,
+        ),
+        "average_buffer_ratio": round(
+            metric_summary["average_buffer_ratio"] or 0,
+            2,
+        ),
+        "average_failure_rate": round(
+            metric_summary["average_failure_rate"] or 0,
+            2,
+        ),
+    }
+
+    return Response(data)

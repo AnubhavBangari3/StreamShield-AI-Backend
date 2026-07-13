@@ -2,8 +2,8 @@ from rest_framework import serializers
 
 from .models import (
     Incident,
-    Recommendation,
     KnowledgeDocument,
+    Recommendation,
 )
 
 
@@ -11,12 +11,14 @@ class RecommendationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recommendation
         fields = "__all__"
+        read_only_fields = ["created_at"]
 
 
 class KnowledgeDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = KnowledgeDocument
         fields = "__all__"
+        read_only_fields = ["uploaded_at"]
 
 
 class IncidentSerializer(serializers.ModelSerializer):
@@ -33,7 +35,6 @@ class IncidentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Incident
         fields = "__all__"
-
         read_only_fields = [
             "created_at",
             "resolved_at",

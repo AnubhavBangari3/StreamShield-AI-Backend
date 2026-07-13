@@ -7,6 +7,7 @@ class StreamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stream
         fields = "__all__"
+        read_only_fields = ["created_at"]
 
 
 class StreamMetricSerializer(serializers.ModelSerializer):
@@ -18,7 +19,6 @@ class StreamMetricSerializer(serializers.ModelSerializer):
     class Meta:
         model = StreamMetric
         fields = "__all__"
-
         read_only_fields = [
             "timestamp",
             "is_anomaly",

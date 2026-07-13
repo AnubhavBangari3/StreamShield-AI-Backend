@@ -44,9 +44,7 @@ class Incident(models.Model):
     )
 
     affected_users = models.PositiveIntegerField(default=0)
-
     probable_root_cause = models.TextField(blank=True)
-
     ai_summary = models.TextField(blank=True)
 
     recommended_actions = models.JSONField(
@@ -55,13 +53,8 @@ class Incident(models.Model):
     )
 
     confidence_score = models.FloatField(default=0)
-
     created_at = models.DateTimeField(auto_now_add=True)
-
-    resolved_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    resolved_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -93,8 +86,10 @@ class Recommendation(models.Model):
     )
 
     is_completed = models.BooleanField(default=False)
-
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
 
     def __str__(self):
         return self.action
@@ -102,12 +97,12 @@ class Recommendation(models.Model):
 
 class KnowledgeDocument(models.Model):
     title = models.CharField(max_length=255)
-
     document_type = models.CharField(max_length=50)
-
     file_path = models.CharField(max_length=500)
-
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-uploaded_at"]
 
     def __str__(self):
         return self.title
