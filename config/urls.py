@@ -3,6 +3,7 @@ from django.urls import include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
+    SpectacularRedocView,
 )
 
 urlpatterns = [
@@ -27,6 +28,11 @@ urlpatterns = [
     ),
 
     path(
+        "api/knowledge/",
+        include("knowledge_base.urls"),
+    ),
+
+    path(
         "api/schema/",
         SpectacularAPIView.as_view(),
         name="schema",
@@ -35,13 +41,16 @@ urlpatterns = [
     path(
         "api/docs/",
         SpectacularSwaggerView.as_view(
-            url_name="schema"
+            url_name="schema",
         ),
         name="swagger-ui",
     ),
 
     path(
-    "api/knowledge/",
-    include("knowledge_base.urls"),
-),
+        "api/redoc/",
+        SpectacularRedocView.as_view(
+            url_name="schema",
+        ),
+        name="redoc",
+    ),
 ]

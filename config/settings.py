@@ -90,8 +90,9 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "StreamShield AI API",
-    "DESCRIPTION": "AI-powered live streaming monitoring platform",
+    "DESCRIPTION": "API documentation for StreamShield AI Platform",
     "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # Database
